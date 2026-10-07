@@ -21,10 +21,10 @@ public class ShellWindow extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         output.setBackground(BG);
         output.setForeground(FG);
-        output.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14)); // моноширинный шрифт, как в терминале
+        output.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14)); // моноширинный шрифт
         input.setBackground(BG);
         input.setForeground(FG);
-        input.setCaretColor(FG); // цвет мигающего курсора, иначе он будет чёрным и пропадёт на тёмном фоне
+        input.setCaretColor(FG); // цвет текстового курсора
         input.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
     }
 
@@ -33,8 +33,8 @@ public class ShellWindow extends JFrame {
         input.setText("");
         output.append("$ " + line + "\n");
         String[] parts = Parser.parse(line);
-        output.append(String.join(" | ", parts) + "\n");
-        // передает line в Parser, а результат — в CommandExecutor
+        parts = Parser.parse(line); // передает line в Parser, а результат — в CommandExecutor
+        String result = CommandExecutor.execute(parts);
+        output.append(result + "\n");
     }
-
 }
