@@ -5,27 +5,25 @@ import java.awt.*;
 public class ShellWindow extends JFrame {
     private final JTextArea output = new JTextArea();
     private final JTextField input = new JTextField();
-    private static final Color BG = new Color(30, 30, 30);// почти чёрный
-    private static final Color FG = new Color(0, 220, 120);// зелёный текст
-
-    // в конструкторе, после создания output и input:
-
+    private static final Color BG = new Color(30, 30, 30);
+    private static final Color FG = new Color(0, 220, 120);
+    private static final Font FONT = new Font(Font.MONOSPACED, Font.PLAIN, 14);
     /** Создаёт окно; vfsName показывается в заголовке. */
     public ShellWindow(String vfsName) {
         super("Shell emulator — " + vfsName);
         output.setEditable(false);
         add(new JScrollPane(output), BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
-        input.addActionListener(e -> onEnter()); // срабатывает по Enter
+        input.addActionListener(e -> onEnter());
         setSize(700, 450);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         output.setBackground(BG);
         output.setForeground(FG);
-        output.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14)); // моноширинный шрифт
+        output.setFont(FONT);
         input.setBackground(BG);
         input.setForeground(FG);
-        input.setCaretColor(FG); // цвет текстового курсора
-        input.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+        input.setCaretColor(FG);
+        input.setFont(FONT);
     }
 
     private void onEnter() {
@@ -33,8 +31,9 @@ public class ShellWindow extends JFrame {
         input.setText("");
         output.append("$ " + line + "\n");
         String[] parts = Parser.parse(line);
-        parts = Parser.parse(line); // передает line в Parser, а результат — в CommandExecutor
         String result = CommandExecutor.execute(parts);
-        output.append(result + "\n");
+        if (!result.isEmpty()) {
+            output.append(result + "\n");
+        }
     }
 }

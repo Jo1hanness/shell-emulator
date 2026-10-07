@@ -1,6 +1,7 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/** Разбор строки команды. */
 public class Parser {
     /** Раскрывает переменные окружения вида $NAME в строке. */
     public static String expandVariables(String text) {

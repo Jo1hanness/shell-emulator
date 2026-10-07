@@ -1,8 +1,10 @@
 import java.util.Arrays;
+
 /** Выполняет команды эмулятора. */
 public class CommandExecutor {
     private static final int CD_MAX_ARGS = 1;
 
+    /** Выполняет команду и возвращает текст результата. */
     public static String execute(String[] parts) {
         if (parts[0].isEmpty()) {
             return "";
