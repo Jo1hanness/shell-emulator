@@ -40,15 +40,32 @@ public class Main {
             System.out.println(line);
         }
 
-        String vfsName = vfsPath == null ? "no vfs" : Paths.get(vfsPath).getFileName().toString();
+        Vfs vfs = Vfs.empty();
+        String vfsStatus;
+        if (vfsPath == null) {
+            vfsStatus = "VFS not set, using empty VFS";
+        } else {
+            try {
+                vfs = Vfs.load(Paths.get(vfsPath));
+                int[] c = vfs.count();
+                vfsStatus = "VFS loaded: " + vfs.getName() + " (" + c[0] + " dirs, " + c[1] + " files)";
+            } catch (ShellException e) {
+                vfsStatus = e.getMessage() + "; using empty VFS";
+            }
+        }
+        System.out.println(vfsStatus);
+        final String status = vfsStatus;
+
         Path script = scriptPath == null ? null : Paths.get(scriptPath);
-        Shell shell = new Shell();
+        Shell shell = new Shell(vfs);
+        String vfsName = vfs.getName();
 
         SwingUtilities.invokeLater(() -> {
             ShellWindow window = new ShellWindow(shell, vfsName);
             for (String line : debug) {
                 window.println(line);
             }
+            window.println(status);
             window.setVisible(true);
             if (script != null) {
                 window.runScript(script);
