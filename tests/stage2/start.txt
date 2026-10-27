@@ -1,0 +1,13 @@
+# Стартовый скрипт этапа 2.
+# Строки с '#' и пустые строки — комментарии, они не выполняются.
+
+echo hello from script
+echo home is $HOME
+
+# заглушки этапа 1
+ls -l /home
+cd /tmp
+
+# ошибка: неверные аргументы — на этой строке скрипт остановится
+cd a b
+echo this line must not be executed

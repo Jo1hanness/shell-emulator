@@ -1,0 +1,5 @@
+# Скрипт без ошибок: выполняется полностью
+echo first
+ls
+cd docs
+echo last

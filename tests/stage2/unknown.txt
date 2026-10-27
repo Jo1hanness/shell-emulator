@@ -1,0 +1,4 @@
+# Неизвестная команда останавливает скрипт
+echo before
+foo bar
+echo after

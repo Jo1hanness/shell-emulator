@@ -4,9 +4,15 @@ import java.util.Arrays;
 public class CommandExecutor {
     private static final int CD_MAX_ARGS = 1;
 
-    /** Выполняет команду и возвращает текст результата. */
-    public static String execute(String[] parts) {
-        if (parts[0].isEmpty()) {
+    private final Shell shell;
+
+    public CommandExecutor(Shell shell) {
+        this.shell = shell;
+    }
+
+    /** Выполняет команду и возвращает текст результата; при ошибке бросает ShellException. */
+    public String execute(String[] parts) throws ShellException {
+        if (parts.length == 0 || parts[0].isEmpty()) {
             return "";
         }
         String command = parts[0];
@@ -19,14 +25,13 @@ public class CommandExecutor {
                 return "";
             case "cd":
                 if (args.length > CD_MAX_ARGS) {
-                    return "cd: too many arguments";
+                    throw new ShellException("cd: too many arguments");
                 }
                 return "cd: args=" + Arrays.toString(args);
             case "ls":
                 return "ls: args=" + Arrays.toString(args);
             default:
-                return "Unknown command: " + command;
+                throw new ShellException("Unknown command: " + command);
         }
     }
-
 }
