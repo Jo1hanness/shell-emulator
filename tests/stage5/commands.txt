@@ -1,0 +1,36 @@
+# Тест команд этапа 5 (запускать с tests/vfs/deep.zip).
+# Все изменения выполняются только в памяти: архив deep.zip не меняется.
+
+# cp: файл в новый файл, файл в каталог, перезапись, каталог с -r, несколько файлов в каталог
+cp etc/motd tmp/motd.copy
+cp home/user/hello.txt tmp
+ls -l tmp
+rev tmp/motd.copy
+cp home/user/hello.txt tmp/motd.copy
+rev tmp/motd.copy
+cp -r home/user/docs tmp/docs-backup
+ls tmp/docs-backup tmp/docs-backup/notes/archive
+cp etc/motd var/log/app/app.log tmp/docs-backup
+ls tmp/docs-backup
+cp bin/logo.png tmp/
+ls -l bin tmp
+
+# rm: файл, несколько файлов, каталог с -r
+rm tmp/motd.copy
+rm tmp/hello.txt tmp/logo.png
+ls tmp
+rm -r tmp/docs-backup/notes
+ls tmp/docs-backup
+rm -r tmp/docs-backup
+ls tmp
+
+# Копия независима от оригинала: удаляем оригинал, копия остаётся
+cp -r var/log tmp/log
+rm -r var/log
+ls var tmp/log/app
+rev tmp/log/app/app.log
+
+# rm каталога, в котором не находимся, из подкаталога
+cd home/user
+rm -r ../../bin
+ls /

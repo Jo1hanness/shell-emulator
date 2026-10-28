@@ -67,6 +67,28 @@ public class VfsNode {
         return directory ? 0 : getData().length;
     }
 
+    /** Глубокая копия узла (для каталога — вместе со всем содержимым) с новым именем. */
+    public VfsNode deepCopy(String newName) {
+        VfsNode copy = new VfsNode(newName, directory);
+        copy.base64Data = base64Data;
+        if (directory) {
+            for (VfsNode child : children.values()) {
+                copy.addChild(child.deepCopy(child.name));
+            }
+        }
+        return copy;
+    }
+
+    /** Является ли этот узел предком node (или самим node). */
+    public boolean isAncestorOf(VfsNode node) {
+        for (VfsNode n = node; n != null; n = n.parent) {
+            if (n == this) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Абсолютный путь узла, например /home/user. */
     public String path() {
         if (parent == null) {

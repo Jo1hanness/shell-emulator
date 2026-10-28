@@ -1,0 +1,2 @@
+# ожидается ошибка
+cp etc/motd home/user/hello.txt tmp/new

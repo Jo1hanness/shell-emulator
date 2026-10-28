@@ -41,6 +41,10 @@ public class CommandExecutor {
                 return cal(args);
             case "rev":
                 return rev(args);
+            case "rm":
+                return rm(args);
+            case "cp":
+                return cp(args);
             default:
                 throw new ShellException("Unknown command: " + command);
         }
@@ -220,5 +224,125 @@ public class CommandExecutor {
             }
         }
         return stripEnd(out);
+    }
+
+    // ---------- общие для rm/cp ----------
+
+    /** Отделяет опцию -r (или -R) от остальных аргументов. */
+    private static boolean parseRecursive(String cmd, String[] args, List<String> operands) throws ShellException {
+        boolean recursive = false;
+        for (String arg : args) {
+            if (arg.equals("-r") || arg.equals("-R")) {
+                recursive = true;
+            } else if (arg.startsWith("-") && arg.length() > 1) {
+                throw new ShellException(cmd + ": invalid option '" + arg + "'");
+            } else {
+                operands.add(arg);
+            }
+        }
+        return recursive;
+    }
+
+    /** Убирает завершающие '/' (кроме корня). */
+    private static String trimSlashes(String path) {
+        String p = path;
+        while (p.length() > 1 && p.endsWith("/")) {
+            p = p.substring(0, p.length() - 1);
+        }
+        return p;
+    }
+
+    // ---------- rm ----------
+
+    /** rm [-r] PATH... — удаляет файлы (с -r — и каталоги) из VFS. Изменения только в памяти. */
+    private String rm(String[] args) throws ShellException {
+        List<String> paths = new ArrayList<>();
+        boolean recursive = parseRecursive("rm", args, paths);
+        if (paths.isEmpty()) {
+            throw new ShellException("rm: missing operand");
+        }
+        for (String path : paths) {
+            VfsNode node = shell.resolve(path);
+            if (node == null) {
+                throw new ShellException("rm: cannot remove '" + path + "': No such file or directory");
+            }
+            if (node.getParent() == null) {
+                throw new ShellException("rm: refusing to remove root directory '/'");
+            }
+            if (node.isDirectory() && !recursive) {
+                throw new ShellException("rm: cannot remove '" + path + "': Is a directory");
+            }
+            if (node.isAncestorOf(shell.getCwd())) {
+                throw new ShellException("rm: cannot remove '" + path + "': current directory is inside it");
+            }
+            node.getParent().removeChild(node.getName());
+        }
+        return "";
+    }
+
+    // ---------- cp ----------
+
+    /**
+     * cp [-r] SRC DST — копирует файл (с -r — каталог) внутри VFS.
+     * cp [-r] SRC... DIR — копирует несколько источников в существующий каталог.
+     * Изменения только в памяти.
+     */
+    private String cp(String[] args) throws ShellException {
+        List<String> operands = new ArrayList<>();
+        boolean recursive = parseRecursive("cp", args, operands);
+        if (operands.isEmpty()) {
+            throw new ShellException("cp: missing file operand");
+        }
+        if (operands.size() == 1) {
+            throw new ShellException("cp: missing destination file operand after '" + operands.get(0) + "'");
+        }
+        String dstPath = trimSlashes(operands.get(operands.size() - 1));
+        List<String> sources = operands.subList(0, operands.size() - 1);
+        VfsNode dst = shell.resolve(dstPath);
+        if (sources.size() > 1 && (dst == null || !dst.isDirectory())) {
+            throw new ShellException("cp: target '" + dstPath + "' is not a directory");
+        }
+
+        for (String srcPath : sources) {
+            VfsNode src = shell.resolve(trimSlashes(srcPath));
+            if (src == null) {
+                throw new ShellException("cp: cannot stat '" + srcPath + "': No such file or directory");
+            }
+            if (src.isDirectory() && !recursive) {
+                throw new ShellException("cp: -r not specified; omitting directory '" + srcPath + "'");
+            }
+
+            VfsNode targetDir;
+            String targetName;
+            if (dst != null && dst.isDirectory()) {
+                targetDir = dst;
+                targetName = src.getParent() == null ? "root" : src.getName();
+            } else {
+                int slash = dstPath.lastIndexOf('/');
+                String parentPath = slash < 0 ? "." : (slash == 0 ? "/" : dstPath.substring(0, slash));
+                targetDir = shell.resolve(parentPath);
+                targetName = dstPath.substring(slash + 1);
+                if (targetDir == null || !targetDir.isDirectory()) {
+                    throw new ShellException("cp: cannot create '" + dstPath + "': No such file or directory");
+                }
+            }
+
+            VfsNode existing = targetDir.getChild(targetName);
+            if (existing == src) {
+                throw new ShellException("cp: '" + srcPath + "' and '" + dstPath + "' are the same file");
+            }
+            if (src.isDirectory() && src.isAncestorOf(targetDir)) {
+                throw new ShellException("cp: cannot copy a directory '" + srcPath + "' into itself");
+            }
+            if (existing != null && existing.isDirectory() != src.isDirectory()) {
+                throw new ShellException("cp: cannot overwrite " + (existing.isDirectory() ? "directory" : "non-directory")
+                        + " '" + existing.path() + "' with " + (src.isDirectory() ? "directory" : "non-directory"));
+            }
+            if (existing != null && existing.isAncestorOf(shell.getCwd())) {
+                throw new ShellException("cp: cannot overwrite '" + existing.path() + "': current directory is inside it");
+            }
+            targetDir.addChild(src.deepCopy(targetName));
+        }
+        return "";
     }
 }

@@ -1,0 +1,2 @@
+# ожидается ошибка
+cp -r etc home/user/hello.txt

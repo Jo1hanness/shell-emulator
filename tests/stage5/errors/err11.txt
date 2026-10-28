@@ -1,0 +1,2 @@
+# ожидается ошибка
+cp etc/motd no/such/dir/file
