@@ -1,0 +1,31 @@
+# Тест команд этапа 4 (запускать с tests/vfs/deep.zip)
+
+# ls: текущий каталог, путь, подробный формат, несколько путей, файл
+ls
+ls home/user
+ls -l /home/user/docs
+ls /etc /tmp
+ls etc/motd
+
+# cd: относительный и абсолютный пути, "..", ".", без аргументов (в корень)
+cd home/user/docs/notes
+ls
+cd ../..
+ls
+cd ./docs/notes/archive
+cd /var/log/app
+ls -l
+cd
+ls
+
+# uptime
+uptime
+
+# cal: текущий месяц, конкретный месяц, високосный февраль
+cal
+cal 2 2024
+cal 1 2000
+
+# rev: переворот строк файла, несколько файлов
+rev etc/motd
+rev /home/user/hello.txt var/log/app/app.log
